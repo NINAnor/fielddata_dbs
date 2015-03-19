@@ -137,4 +137,8 @@ dateidentified	date,
 polygonid	integer REFERENCES kls.p_lokalitet (polygonid) MATCH SIMPLE ON UPDATE CASCADE ON DELETE CASCADE,
 CONSTRAINT kls_l_artsobservasjon_pkey PRIMARY KEY (polygonid, scientificname));
 
+--Give access to sequences
+GRANT USAGE, SELECT ON SEQUENCE kls.p_artsobservasjon_catalognumber_seq TO gisuser;
+GRANT USAGE, SELECT ON SEQUENCE kls.p_lokalitet_polygonid_seq TO gisuser;
+
 --Default values
