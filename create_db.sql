@@ -62,7 +62,17 @@ beskrivelse	varchar(25));
 INSERT INTO kls.l_veg_cover VALUES (1, 'no veg.'), (2, 'sparse'), (3, 'medium dense'), (4, 'dense/abundant');	
 
 -- Get official species list from Artsdatababnken
-CREATE OR REPLACE VIEW kls.l_artsliste AS SELECT *, slekt || ' ' || art || ' ' || underart || ' ' || varietet || ' ' || form AS scientificname FROM lookup_tables.species_names_artsdatabanken_fungi;
+--Check hovedstatus and bistatus (to be put in WhERE clause probably)
+CREATE OR REPLACE VIEW kls.l_artsliste AS SELECT DISTINCT ON (scientificname) * FROM (SELECT
+*, slekt AS scientificname FROM lookup_tables.species_names_artsdatabanken_fungi WHERE slekt IS NOT NULL AND art IS NULL AND underart IS NULL AND varietet IS NULL AND form IS NULL UNION ALL SELECT 
+*, slekt || ' ' || art FROM lookup_tables.species_names_artsdatabanken_fungi WHERE slekt IS NOT NULL AND art IS NOT NULL AND underart IS NULL AND varietet IS NULL AND form IS NULL UNION ALL SELECT 
+*, slekt || ' ' || art || ' var. ' || varietet FROM lookup_tables.species_names_artsdatabanken_fungi WHERE slekt IS NOT NULL AND art IS NOT NULL AND underart IS NULL AND varietet IS NOT NULL AND form IS NULL UNION ALL SELECT 
+*, slekt || ' ' || art || ' f. ' || form FROM lookup_tables.species_names_artsdatabanken_fungi WHERE slekt IS NOT NULL AND art IS NOT NULL AND underart IS NULL AND form IS NOT NULL AND varietet IS NULL UNION ALL SELECT 
+*, slekt || ' ' || art || ' var. ' || varietet || ' f. ' || form FROM lookup_tables.species_names_artsdatabanken_fungi WHERE slekt IS NOT NULL AND art IS NOT NULL AND underart IS NULL AND form IS NOT NULL AND varietet IS NOT NULL UNION ALL SELECT 
+*, slekt || ' ' || art || ' ssp. ' || underart FROM lookup_tables.species_names_artsdatabanken_fungi WHERE slekt IS NOT NULL AND art IS NOT NULL AND underart IS NOT NULL AND varietet IS NULL AND form IS NULL UNION ALL SELECT 
+*, slekt || ' ' || art || ' ssp. ' || underart || ' var. ' || varietet FROM lookup_tables.species_names_artsdatabanken_fungi WHERE slekt IS NOT NULL AND art IS NOT NULL AND underart IS NOT NULL AND varietet IS NOT NULL AND form IS NULL UNION ALL SELECT 
+*, slekt || ' ' || art || ' ssp. ' || underart || ' f. ' || form FROM lookup_tables.species_names_artsdatabanken_fungi WHERE slekt IS NOT NULL AND art IS NOT NULL AND underart IS NOT NULL AND form IS NOT NULL AND varietet IS NULL UNION ALL SELECT 
+*, slekt || ' ' || art || ' ssp. ' || underart || ' var. ' || varietet || ' f. ' || form FROM lookup_tables.species_names_artsdatabanken_fungi WHERE slekt IS NOT NULL AND art IS NOT NULL AND underart IS NOT NULL AND form IS NOT NULL AND varietet IS NOT NULL) AS a
 
 -- Create primary tables with references to lookup tables
 CREATE TABLE kls.p_lokalitet(	
