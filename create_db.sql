@@ -7,7 +7,7 @@ ALTER DEFAULT PRIVILEGES IN SCHEMA kls GRANT SELECT ON TABLES TO gisuser;
 ALTER DEFAULT PRIVILEGES IN SCHEMA kls GRANT INSERT ON TABLES TO gisuser;
 ALTER DEFAULT PRIVILEGES IN SCHEMA kls GRANT DELETE ON TABLES TO gisuser;
 
--- -- Empty shema in order to recreate DB
+-- -- Empty schema in order to recreate DB
 DROP TABLE IF EXISTS kls.p_artsobservasjon;
 DROP TABLE IF EXISTS kls.p_kls_lokalitet;
 DROP TABLE IF EXISTS kls.p_lokalitet;
@@ -61,32 +61,10 @@ veg_cover	smallint UNIQUE NOT NULL CONSTRAINT kls_l_veg_cover_pkey PRIMARY KEY,
 beskrivelse	varchar(25));
 INSERT INTO kls.l_veg_cover VALUES (1, 'no veg.'), (2, 'sparse'), (3, 'medium dense'), (4, 'dense/abundant');	
 
--- Species list is missing
-
-CREATE TABLE kls.l_artsliste	(
-scientificname	varchar(100) UNIQUE NOT NULL CONSTRAINT kls_l_artsliste_pkey PRIMARY KEY,
-kingdom	varchar(8),
-phylum	varchar(20),
-aclass	varchar(25),
-aorder	varchar(25),
-family	varchar(25),
-genus	varchar(40),
-species	varchar(30),
-subspecies	varchar(25),
-scientificnameauthor	varchar(60),
-norsknavn	varchar(25),
-status	varchar(5),
-nrikeid	integer,
-nrekkeid	integer,
-nklasseid	integer,
-nordenid	integer,
-nfamilieid	integer,
-nslektid	integer,
-nartid	integer,
-nuartid	integer);
+-- Get official species list from Artsdatababnken
+CREATE OR REPLACE VIEW kls.l_artsliste AS SELECT *, slekt || ' ' || art || ' ' || underart || ' ' || varietet || ' ' || form AS scientificname FROM lookup_tables.species_names_artsdatabanken_fungi;
 
 -- Create primary tables with references to lookup tables
-
 CREATE TABLE kls.p_lokalitet(	
 datecollected	timestamp,
 fieldnumber	varchar(12),
@@ -114,7 +92,7 @@ CREATE TABLE kls.p_artsobservasjon(
 datelastmodified	date,
 collectioncode	varchar(10),
 catalognumber	serial UNIQUE NOT NULL,
-scientificname	varchar(100) REFERENCES kls.l_artsliste (scientificname) MATCH SIMPLE ON UPDATE CASCADE ON DELETE NO ACTION,
+fk_latinsknavnid	integer REFERENCES lookup_tables.species_names_artsdatabanken_fungi (pk_latinsknavnid) MATCH SIMPLE ON UPDATE CASCADE ON DELETE NO ACTION,
 basisofrecord	varchar(18),
 identifiedby	varchar(100),
 typestatus	varchar(12),
@@ -135,7 +113,7 @@ antropokor	boolean,
 url	varchar(100),
 dateidentified	date,
 polygonid	integer REFERENCES kls.p_lokalitet (polygonid) MATCH SIMPLE ON UPDATE CASCADE ON DELETE CASCADE,
-CONSTRAINT kls_l_artsobservasjon_pkey PRIMARY KEY (polygonid, scientificname));
+CONSTRAINT kls_l_artsobservasjon_pkey PRIMARY KEY (polygonid, fk_latinsknavnid));
 
 --Give access to sequences
 GRANT USAGE, SELECT ON SEQUENCE kls.p_artsobservasjon_catalognumber_seq TO gisuser;
