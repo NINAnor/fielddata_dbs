@@ -20,7 +20,7 @@ DROP TABLE IF EXISTS kls.l_collectingmethod;
 DROP TABLE IF EXISTS kls.l_preparationtype;
 DROP TABLE IF EXISTS kls.l_sex;
 DROP TABLE IF EXISTS kls.l_basisofrecord;
- 
+ DROP VIEW IF EXISTS kls.l_artsliste;
  
 -- Create lookup tables and fill them with data
 CREATE TABLE kls.l_basisofrecord	(
@@ -63,7 +63,7 @@ INSERT INTO kls.l_veg_cover VALUES (1, 'no veg.'), (2, 'sparse'), (3, 'medium de
 
 -- Get official species list from Artsdatababnken
 --Check hovedstatus and bistatus (to be put in WhERE clause probably)
-CREATE OR REPLACE VIEW kls.l_artsliste AS SELECT DISTINCT ON (scientificname) * FROM (SELECT
+CREATE MATERIALIZED VIEW kls.l_artsliste AS SELECT DISTINCT ON (scientificname) * FROM (SELECT
 *, slekt AS scientificname FROM lookup_tables.species_names_artsdatabanken_fungi WHERE slekt IS NOT NULL AND art IS NULL AND underart IS NULL AND varietet IS NULL AND form IS NULL UNION ALL SELECT 
 *, slekt || ' ' || art FROM lookup_tables.species_names_artsdatabanken_fungi WHERE slekt IS NOT NULL AND art IS NOT NULL AND underart IS NULL AND varietet IS NULL AND form IS NULL UNION ALL SELECT 
 *, slekt || ' ' || art || ' var. ' || varietet FROM lookup_tables.species_names_artsdatabanken_fungi WHERE slekt IS NOT NULL AND art IS NOT NULL AND underart IS NULL AND varietet IS NOT NULL AND form IS NULL UNION ALL SELECT 
