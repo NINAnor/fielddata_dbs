@@ -14,19 +14,19 @@
 # species names from Artsdatabanken. The latter is regularly
 # (every sunday) updated.
 #
-# This autocompleter requires the field "latinn".
+# This implementation of the autocompleter requires the field "latinn".
 # This would have to be adjusted to the name of the 
 # relevant field in other use cases.
-# Furthermore, the SQL query which fetches the items 
-# for the autocompleter is only set up for fungi,
-# because the MATERIALIZED VIEW only contains fungi.
-# In other cases this can easily be adjusted.
 # 
-# It also requires a OpenProject() Python macro 
-# (./generate_autocompleter.py) loaded at the start of
-# a QGIS project. This macro is used to cache the 
-# completer items, so they are fetched from DB
-# only once, which speeds up the GUI start.
+# It also requires that ./generate_autocompleter.py is run as a 
+# OpenProject() Python macro at the start of a QGIS project, 
+# which caches species names into a global variable. 
+#
+# The autocompleter can be added to a TextEdit (QLineEdit) widget
+# by referencing it as From init function.
+# The latter is achieved by saving this script in the project folder
+# and referencing it as "species_autocompleter.formOpen" in the 
+# "Fields" tab of the relevant layer in QGIS.
 #
 # To do`s:
 # - Implement validation of species names
