@@ -46,6 +46,8 @@ def formOpen(dialog,layerid,featureid):
     myDialog = dialog
     global nameField
     nameField = dialog.findChild(QLineEdit,"latinn")
+    buttonBox = dialog.findChild(QDialogButtonBox,"buttonBox")
+
     
     #Initiate completer
     completer = QCompleter()
@@ -55,6 +57,8 @@ def formOpen(dialog,layerid,featureid):
     model = QStringListModel()
     model.setStringList(generate_autocompleter.completition_items)
     completer.setModel(model)
+    
+    myDialog.attributeChanged.connect(validate)
 
     # Disconnect the signal that QGIS has wired up for the dialog to the button box.
     buttonBox.accepted.disconnect(myDialog.accept)
@@ -62,16 +66,24 @@ def formOpen(dialog,layerid,featureid):
     # Wire up our own signals.
     buttonBox.accepted.connect(validate)
     buttonBox.rejected.connect(myDialog.reject)
- 
-def validate():
-  # Make sure that the name field isn't empty.
-    if not nameField.text().length() > 0:
+
+def validate( attr, value ):
+    if attr == "latinn":
+        if nameField.text() == False or value == "NULL" or nameField.text() not in generate_autocompleter.completition_items:
+            nameField.setStyleSheet( "background-color: '#ff9999'")
+        else:
+            nameField.setStyleSheet("")
+    
+def validate_final():
+	# Make sure that the name field isn't empty.
+    if nameField.text() == False:
         msgBox = QMessageBox()
         msgBox.setText("Name field can not be null.")
         msgBox.exec_()
-	elif not nameField.text() in completition_items:
+    #Check if entered species name is found in the species list
+    elif nameField.text() not in generate_autocompleter.completition_items:
         msgBox = QMessageBox()
-        msgBox.setText("Name field can not be null.")
+        msgBox.setText("Tree species name not in the list of valid names.")
         msgBox.exec_()
     else:
         # Return the form as accpeted to QGIS.
